@@ -1,4 +1,7 @@
 /*------------------------------   VARIABLES   ------------------------------*/
+//DOMAINS
+var roofDomain = DOMAIN([[0,1],[0,1]])([6,6]);
+
 
 // COLORS
 var DARK_WOOD = [133/255,94/255,66/255];
@@ -46,9 +49,9 @@ m: medium, l: low
 */
 
 // heights
-var lWallHeight = hStairs;
-var mWallHeight = 3*lWallHeight;
-var hWallHeight = mWallHeight;  // PER ORA, DA VERIFICARE!!!!-------------------------------------------------------------------------
+var lWallHeight = hStairs; 		// circa 3
+var mWallHeight = 7;
+var hWallHeight = 7;
 var totalWallHeight = lWallHeight + mWallHeight + hWallHeight;
 
 // wall thickness
@@ -72,7 +75,6 @@ var leftSideWidth = wallsThickness + cW + 6;
 var windowWidth = 1.5;
 var	windowThickness = 0.1;
 var littleWindowHeight = lWallHeight/3;
-var mediumWindowHeight = lWallHeight*3/4;
 var bigWindowHeight = totalWallHeight*3/18;
 var sideHighWindowHeight = totalWallHeight*2/18;
 var rearSmallerHighWindowHeight = mWallHeight/8;
@@ -94,6 +96,28 @@ var blindHeight = 0.1;
 var doorWidth = 3.25;
 var doorHeight = 5.625;
 var doorThickness = 0.25;
+
+var mediumWindowHeight = lWallHeight*3/4;
+
+//-------------------------------------------------------------------------------
+
+// ROOF
+
+// Central roof
+var timpanoWidth = stairsTotalWidth;
+var roofDepth = 3*wallsThickness+7+7+10 + colonnadeDepth;
+var timpanoHeight = 3;
+var dTettoFrontone = 0.1;  // distanza tra parte di tetto che esce e timpano
+
+// Horizontal Roof
+var dX = 8; // distanza tra vertici in basso a sinistra del tetto orizzontale e quello perpendicolare
+var dY = colonnadeDepth;
+var dZ = 2;  // differenza altezze tetti
+var sporgenza = 0.2; // distanza tra muro su asse x e tetto che sporge
+var horizontalRoofWidth_half = dX + timpanoWidth/2;
+var horizontalRoofDepth = 7+12+2*wallsThickness + 2*sporgenza + 6;
+var horizontalRoofHeight = timpanoHeight+dZ;
+var parteDrittaWidth = 6;
 
 //-------------------------------------------------------------------------------
 
@@ -534,6 +558,25 @@ var applyBoundaryWood = function(lbV,windowHeight,side) {
 
 /* ------------------------------------------ WALLS ------------------------------------------*/
 
+var buildWalls = function() {
+
+	// BUILD LEFT HALF of the building walls
+	var frontWalls = buildFrontWalls();
+	var sideWalls = buildSideWalls();
+	var backWalls = buildBackWalls();
+	var internalWalls = buildInternalWalls();
+
+
+	//BUILD THE ENTIRE BUILDING WALLS
+	var leftHalfBuild = STRUCT([frontWalls,sideWalls,backWalls,internalWalls]);
+
+	var walls = duplicate(leftHalfBuild);
+
+
+	DRAW(walls);
+};
+
+
 var buildWall = function(p,width,depth,height) {
 	return SIMPLEX_GRID([[-p[0],width],[-p[1],depth],[-p[2],height]])
 };
@@ -575,7 +618,6 @@ var buildFrontWalls = function() {
 								 [-lWallHeight,mWallHeight*3/8,-mWallHeight/8,mWallHeight*2/8,-mWallHeight/8,mWallHeight/8]]);
 
 
-
 	var dist = wallsThickness+0.5; // distanza tra inizio muro centrale con scalinate e prima finestra 
 	var mwFrontCentral1 = T([0])([windowWidth+3+dist])(mwFront2_4);
 	var mwFrontCentral2 = SIMPLEX_GRID([[-leftSideWidth,dist,-windowWidth,(5.875-dist-windowWidth)],[wallsThickness],[-lWallHeight,mWallHeight]]);
@@ -584,7 +626,6 @@ var buildFrontWalls = function() {
 										[-lWallHeight-doorHeight,(mWallHeight-doorHeight)]]);
 	var lwFrontCentral = SIMPLEX_GRID([[-leftSideWidth,stairsTotalWidth/2],[wallsThickness],[lWallHeight]]);
 	var frontCentral = STRUCT([mwFrontCentral1, mwFrontCentral2, mwFrontCentral3, lwFrontCentral]);
-
 
 	var highWall1 = T([2])([mWallHeight])(frontCentral);
 	var highWall2 = T([2])([mWallHeight])(STRUCT([mwFront3,mwFront2_4,mwFront4]));
@@ -605,6 +646,7 @@ var buildSideWalls = function() {
 	var sideWallExternal2 = buildWall([0,wallsThickness+0.5+windowWidth,0],wallsThickness,3,lWallHeight+mWallHeight);
 	var sideWallExternalWindow2 = SIMPLEX_GRID([[wallsThickness],[-wallsThickness -0.5 -windowWidth -3, windowWidth],sideWallSmallWindowHeight]);
 	var sideWallExternal3 = buildWall([0,wallsThickness+0.5+windowWidth+3+windowWidth,0],wallsThickness,0.5+wallsThickness,lWallHeight+mWallHeight);
+
 
 	var sideWallExternal = STRUCT([sideWallExternal1,sideWallExternalWindow1,sideWallExternal2,sideWallExternalWindow2,sideWallExternal3]);
 	sideWallExternal.translate([0],[-1]);
@@ -627,6 +669,7 @@ var buildSideWalls = function() {
 	var sideWallB12 = SIMPLEX_GRID([ [-11,+wallsThickness],
 									 [-wallsThickness-7-wallsThickness -0.5-windowWidth-3-windowWidth-1.5, 1],
 									 [lWallHeight+mWallHeight+hWallHeight] ]);
+
 	var sideWallB1_B2 = STRUCT([sideWallB1,sideWallB2,sideWallB12,sideWallB1_windows]);
 
 	var sideWall = STRUCT([rearSideWall,sideWallExternal,sideWallB1_B2]);
@@ -663,23 +706,76 @@ var buildInternalWalls = function() {
 	return internalWalls;
 }
 
-var buildWalls = function() {
-
-	// BUILD LEFT HALF of the building walls
-	var frontWalls = buildFrontWalls();
-	var sideWalls = buildSideWalls();
-	var backWalls = buildBackWalls();
-	var internalWalls = buildInternalWalls();
 
 
-	//BUILD THE ENTIRE BUILDING WALLS
-	var leftHalfBuild = STRUCT([frontWalls,sideWalls,backWalls,internalWalls]);
+/*-----------------------------------------------   ROOF   --------------------------------------------------------------*/
 
-	var walls = duplicate(leftHalfBuild);
+var buildRoofs = function() {
+	var cRoof = buildCentralRoof();
+	var hRoof = buildHorizontalRoof();
+
+	var leftRoof = STRUCT([cRoof,hRoof]).translate([0,2],[6+11+wallsThickness,totalWallHeight]);
+	var roof = duplicate(leftRoof);
+	DRAW(roof);
+}
+
+var buildCentralRoof = function() {
+	// control points pezzo diagonale
+	var cpDiagonalFront = [[0,0,0],[timpanoWidth/2,0,timpanoHeight]];
+	var cpDiagonalBack = cpDiagonalFront.map(function(p){return [p[0],p[1]+roofDepth,p[2]]});
+	//Superficie del tetto
+	var roof1Surface = MAP(BEZIER(S1)([BEZIER(S0)(cpDiagonalFront), BEZIER(S0)(cpDiagonalBack)]))(roofDomain);
+	roof1Surface = COLOR(ROOF)(roof1Surface);
+
+	//control points timpano
+	var cpDiagonalTimpano = cpDiagonalFront.map(function(p){return [p[0],p[1]+dTettoFrontone,p[2]]});
+	var vertexLowRightTimpano = [[timpanoWidth/2,dTettoFrontone,0]];
+	//Superficie del timpano
+	var timpanoSurfaceFront = MAP(BEZIER(S1)([BEZIER(S0)(cpDiagonalTimpano), BEZIER(S0)(vertexLowRightTimpano)]))(roofDomain);
+	var timpanoSurfaceBack = T([1])([roofDepth])(timpanoSurfaceFront);
+	var halfTimpano = STRUCT([timpanoSurfaceFront,timpanoSurfaceBack]);
+	halfTimpano = COLOR(WHITE_TIMPANO)(halfTimpano);
+
+	var roofZAxis = STRUCT([halfTimpano,roof1Surface]);
+	roofZAxis.translate([1],[-colonnadeDepth]);
+
+	return roofZAxis;
+}
 
 
-	DRAW(walls);
-};
+var buildHorizontalRoof = function() {
+	var pEF = [0,0,0];
+	var pEB = [0,horizontalRoofDepth,0];
+	var pUM = [horizontalRoofWidth_half -parteDrittaWidth/2,horizontalRoofDepth/2,horizontalRoofHeight];
+	var pMF = [horizontalRoofWidth_half -parteDrittaWidth/2,0,0];
+	var pMB = [horizontalRoofWidth_half -parteDrittaWidth/2,horizontalRoofDepth,0];
+	var pUC = [horizontalRoofWidth_half,horizontalRoofDepth/2,horizontalRoofHeight];
+	var pCF = [horizontalRoofWidth_half,0,0];
+	var pCB = [horizontalRoofWidth_half,horizontalRoofDepth,0];
+
+
+
+	var cpHorizontalRoofExternalFront = [pEF,pUM];
+	var cpHorizontalRoofExternalBack = [pEB,pUM];
+	var cpMiddleFront = [pMF, pUM];
+	var cpMiddleBack = [pMB, pUM];
+	var cpCentralFront = [pCF, pUC];
+	var cpCentralBack = [pCB, pUC];
+
+	// surfaces
+	var surfaceFrontLeft = MAP(BEZIER(S1)([BEZIER(S0)(cpHorizontalRoofExternalFront), BEZIER(S0)(cpMiddleFront)]))(roofDomain);
+	var surfaceFrontCentral = MAP(BEZIER(S1)([BEZIER(S0)(cpMiddleFront), BEZIER(S0)(cpCentralFront)]))(roofDomain);
+	var surfaceSide = MAP(BEZIER(S1)([BEZIER(S0)(cpHorizontalRoofExternalFront), BEZIER(S0)(cpHorizontalRoofExternalBack)]))(roofDomain);
+	var surfaceBackLeft = MAP(BEZIER(S1)([BEZIER(S0)(cpMiddleBack), BEZIER(S0)(cpHorizontalRoofExternalBack)]))(roofDomain);
+	var surfaceBackCentral = MAP(BEZIER(S1)([BEZIER(S0)(cpCentralBack), BEZIER(S0)(cpMiddleBack)]))(roofDomain);
+
+	var horizontalRoof = STRUCT([surfaceFrontLeft,surfaceFrontCentral,surfaceSide,surfaceBackCentral,surfaceBackLeft]);
+	horizontalRoof.translate([0,1],[-dX,-sporgenza]);
+	horizontalRoof = COLOR(ROOF)(horizontalRoof);
+
+	return horizontalRoof;
+}
+
 
 
 
@@ -691,7 +787,7 @@ var buildFloors = function() {
 }
 
 var buildCeilings = function() {
-	var externalCeiling = SIMPLEX_GRID([[wallsThickness + 11],[2*wallsThickness + 7],[0]]).translate([0,2],[-1,lWallHeight+mWallHeight]);
+	var externalCeiling = SIMPLEX_GRID([[11],[7],[0]]).translate([0,1,2],[wallsThickness-1,wallsThickness,lWallHeight+mWallHeight]);
 	var topCeiling = SIMPLEX_GRID([[wallsThickness + 6 + stairsTotalWidth/2],[4*wallsThickness +7+7+9],[0]]).translate([0,2],[11,totalWallHeight+0.01]);
 
 	var leftCeilings = STRUCT([externalCeiling,topCeiling]);
@@ -727,6 +823,7 @@ var buildVilla = function(){
 	build2FlightOfSteps();
 	buildFloors();
 	buildCornices();
+	buildRoofs();
 }
 
 
@@ -771,81 +868,7 @@ function hermiteS1 (nubs1, nubs2, tan1, tan2) {
 }
 
 
-/*-----------------------------------------------   ROOF   --------------------------------------------------------------*/
 
-//DOMAINS
-var domain2Roof = DOMAIN([[0,1],[0,1]])([6,6]);
-
-
-// -------------- TETTO MIO
-
-var frontoneWidth = stairsTotalWidth;
-var roofDepth = 3*wallsThickness+7+7+10 + colonnadeDepth;
-var frontoneHeight = 3;
-// control points pezzo diagonale
-var cpDiagonalFront = [[0,0,0],[frontoneWidth/2,0,frontoneHeight]];
-var cpDiagonalBack = cpDiagonalFront.map(function(p){return [p[0],p[1]+roofDepth,p[2]]});
-//Superficie del tetto
-var roof1Surface = MAP(BEZIER(S1)([BEZIER(S0)(cpDiagonalFront), BEZIER(S0)(cpDiagonalBack)]))(domain2Roof);
-roof1Surface = COLOR(ROOF)(roof1Surface);
-
-//control points timpano
-var x = 0.1;  // distanza tra parte di tetto che esce e frontone
-var cpDiagonalTimpano = cpDiagonalFront.map(function(p){return [p[0],p[1]+x,p[2]]});
-var vertexLowRightTimpano = [[frontoneWidth/2,x,0]];
-//Superficie del timpano
-var timpanoSurfaceFront = MAP(BEZIER(S1)([BEZIER(S0)(cpDiagonalTimpano), BEZIER(S0)(vertexLowRightTimpano)]))(domain2Roof);
-var timpanoSurfaceBack = T([1])([roofDepth])(timpanoSurfaceFront);
-var halfTimpano = STRUCT([timpanoSurfaceFront,timpanoSurfaceBack]);
-halfTimpano = COLOR(WHITE_TIMPANO)(halfTimpano);
-
-var roofZAxis = STRUCT([halfTimpano,roof1Surface]);
-roofZAxis.translate([1],[-colonnadeDepth]);
-
-
-
-// parte orizzontale del tetto
-var dX = 8; // distanza tra vertici in basso a sinistra del tetto orizzontale e quello perpendicolare
-var dY = colonnadeDepth;
-var dZ = 2;  // differenza altezze tetti
-var sporgenza = 0.2; // distanza tra muro su asse x e tetto che sporge
-var horizontalRoofWidth_half = dX + frontoneWidth/2;
-var horizontalRoofDepth = 7+12+2*wallsThickness + 2*sporgenza + 6;
-var horizontalRoofHeight = frontoneHeight+dZ;
-var parteDrittaWidth = 6;
-
-var pEF = [0,0,0];
-var pEB = [0,horizontalRoofDepth,0];
-var pUM = [horizontalRoofWidth_half -parteDrittaWidth/2,horizontalRoofDepth/2,horizontalRoofHeight];
-var pMF = [horizontalRoofWidth_half -parteDrittaWidth/2,0,0];
-var pMB = [horizontalRoofWidth_half -parteDrittaWidth/2,horizontalRoofDepth,0];
-var pUC = [horizontalRoofWidth_half,horizontalRoofDepth/2,horizontalRoofHeight];
-var pCF = [horizontalRoofWidth_half,0,0];
-var pCB = [horizontalRoofWidth_half,horizontalRoofDepth,0];
-
-
-
-var cpHorizontalRoofExternalFront = [pEF,pUM];
-var cpHorizontalRoofExternalBack = [pEB,pUM];
-var cpMiddleFront = [pMF, pUM];
-var cpMiddleBack = [pMB, pUM];
-var cpCentralFront = [pCF, pUC];
-var cpCentralBack = [pCB, pUC];
-
-// surfaces
-var surfaceFrontLeft = MAP(BEZIER(S1)([BEZIER(S0)(cpHorizontalRoofExternalFront), BEZIER(S0)(cpMiddleFront)]))(domain2Roof);
-var surfaceFrontCentral = MAP(BEZIER(S1)([BEZIER(S0)(cpMiddleFront), BEZIER(S0)(cpCentralFront)]))(domain2Roof);
-var surfaceSide = MAP(BEZIER(S1)([BEZIER(S0)(cpHorizontalRoofExternalFront), BEZIER(S0)(cpHorizontalRoofExternalBack)]))(domain2Roof);
-var surfaceBackLeft = MAP(BEZIER(S1)([BEZIER(S0)(cpMiddleBack), BEZIER(S0)(cpHorizontalRoofExternalBack)]))(domain2Roof);
-var surfaceBackCentral = MAP(BEZIER(S1)([BEZIER(S0)(cpCentralBack), BEZIER(S0)(cpMiddleBack)]))(domain2Roof);
-
-var horizontalRoof = STRUCT([surfaceFrontLeft,surfaceFrontCentral,surfaceSide,surfaceBackCentral,surfaceBackLeft]);
-horizontalRoof.translate([0,1],[-dX,-sporgenza]);
-horizontalRoof = COLOR(ROOF)(horizontalRoof);
-
-var leftRoof = STRUCT([roofZAxis,horizontalRoof]).translate([0,2],[6+11+wallsThickness,totalWallHeight]);
-var roof = duplicate(leftRoof);
-DRAW(roof);
 
 /* ------------------------------------------ END ------------------------------------------*/
 buildVilla();
