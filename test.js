@@ -35,13 +35,7 @@ hStairs = 4*heightSteps+hStep;
 
 //-------------------------------------------------------------------------------
 
-// COLONNADE
-var colonnadeDepth = 6;
-var colonnadeWidth = 15;
 
-var upperColumnBase = 1;
-
-//-------------------------------------------------------------------------------
 // WALLS
 /*
 e: external, c: central, b: back
@@ -71,12 +65,14 @@ var leftSideWidth = wallsThickness + cW + 6;
 
 //-------------------------------------------------------------------------------
 
+
 // WINDOWS
 var windowWidth = 1.5;
 var	windowThickness = 0.1;
 var littleWindowHeight = lWallHeight/3;
-var bigWindowHeight = totalWallHeight*3/18;
-var sideHighWindowHeight = totalWallHeight*2/18;
+var littleFrontWindowWidth = 1;
+var bigWindowHeight = mWallHeight/2;
+var sideHighWindowHeight = mWallHeight/2;
 var rearSmallerHighWindowHeight = mWallHeight/8;
 var rearBiggerHighWindowHeight = hWallHeight/4;
 var rearBiggerMediumWindowHeight = mWallHeight/4;
@@ -93,13 +89,23 @@ var blindHeight = 0.1;
 //-------------------------------------------------------------------------------
 
 // FRONTDOOR
-var doorWidth = 3.25;
+//var doorWidth = 3.25;
+var doorWidth = 2.5;
 var doorHeight = 5.625;
 var doorThickness = 0.25;
 
-var mediumWindowHeight = lWallHeight*3/4;
+var lowDoorHeight = lWallHeight*3/4;
 
 //-------------------------------------------------------------------------------
+
+// COLONNADE
+var colonnadeDepth = 6;
+var colonnadeWidth = 15;
+
+var upperColumnBase = 1;
+var columnDistance = (stairsTotalWidth/2 - doorWidth/2 - 2*windowWidth - wallsThickness)/3; //0.75;
+//-------------------------------------------------------------------------------
+
 
 // ROOF
 
@@ -342,7 +348,7 @@ var applyBoundaries = function(){
 
 var buildDoors = function() {
 	buildFrontdoors();
-	buildBackdoor();
+	buildBackdoors();
 	buildGenericDoors();
 }
 
@@ -350,15 +356,17 @@ var buildFrontdoors = function() {
 	var fd = buildDoor();
 	fd.translate([1],[wallsThickness/2]);
 
-	var fdUp = T([2])([mWallHeight])(fd);
+	var fdUp = T([2])([mWallHeight+corniceHeight])(fd);
 
 	drawAll([fd,fdUp]);
 }
 
-var buildBackdoor = function() {
+var buildBackdoors = function() {
 	var bd = buildDoor();
 	bd.translate([1],[-doorThickness+4*wallsThickness+7+7+9-colonnadeDepth +wallsThickness/2]);
-	DRAW(bd);
+	var bdUp = T([2])([mWallHeight+corniceHeight])(bd);
+
+	drawAll([bd,bdUp]);
 }
 
 
@@ -433,9 +441,9 @@ var buildGenericDoor = function (p,height,side) {
 }
 
 var buildGenericDoors = function() {
-	var dFrontLeft = buildGenericDoor([0.5+ windowWidth+4.5,wallsThickness/2,0],mediumWindowHeight);
+	var dFrontLeft = buildGenericDoor([0.5+ windowWidth+4.5,wallsThickness/2,0],lowDoorHeight);
 
-	var dSideExternalRight = buildGenericDoor([wallsThickness/2,wallsThickness +0.5 +windowWidth,0],mediumWindowHeight,true).translate([0],[-1]);
+	var dSideExternalRight = buildGenericDoor([wallsThickness/2,wallsThickness +0.5 +windowWidth,0],lowDoorHeight,true).translate([0],[-1]);
 	
 	var leftDoors = STRUCT([dSideExternalRight,dFrontLeft]);
 	var doors = duplicate(leftDoors);
@@ -561,6 +569,12 @@ var applyBoundaryWood = function(lbV,windowHeight,side) {
 var buildWalls = function() {
 
 	// BUILD LEFT HALF of the building walls
+	var lowWalls = buildLowWalls();
+	var middleWalls = buildMiddleWalls();
+	var highWalls = buildHighWalls();
+	var leftHalfBuild = STRUCT([lowWalls,middleWalls,highWalls]);
+
+/*
 	var frontWalls = buildFrontWalls();
 	var sideWalls = buildSideWalls();
 	var backWalls = buildBackWalls();
@@ -568,8 +582,8 @@ var buildWalls = function() {
 
 
 	//BUILD THE ENTIRE BUILDING WALLS
-	var leftHalfBuild = STRUCT([frontWalls,sideWalls,backWalls,internalWalls]);
-
+	var leftHalfBuild = STRUCT([frontWalls,sideWalls,backWalls,internalWalls,lowWalls]);
+*/
 	var walls = duplicate(leftHalfBuild);
 
 
@@ -581,9 +595,216 @@ var buildWall = function(p,width,depth,height) {
 	return SIMPLEX_GRID([[-p[0],width],[-p[1],depth],[-p[2],height]])
 };
 
-var buildFrontWalls = function() {
+/*  LOW WALLS */
+var buildLowWalls = function() {
 	// FRONT WALLS
 	var lwFront1 = SIMPLEX_GRID([[0.5,-windowWidth,4.5,-windowWidth,1],[wallsThickness],[lWallHeight]]);
+	var lwFront2_1 = SIMPLEX_GRID([[-0.5,windowWidth],
+								 [wallsThickness],
+								 [lWallHeight/3,-lWallHeight/3,lWallHeight/3]]);
+	var lwFront2_2 = SIMPLEX_GRID([[-(0.5+windowWidth+4.5),windowWidth],
+								 [wallsThickness],
+								 [-lWallHeight*3/4,lWallHeight/4]]);
+
+	var lwFront3_1 = SIMPLEX_GRID([[-(0.5+windowWidth+4.5+windowWidth+1),2+wallsThickness+1.5,-windowWidth,3],
+								 [wallsThickness],
+								 [lWallHeight]]);
+	var lwFront3_2 = SIMPLEX_GRID([[-(0.5+windowWidth+4.5+windowWidth+1)-2-wallsThickness-1.5,windowWidth],
+								 [wallsThickness],
+								 [lWallHeight/3,-lWallHeight/3,lWallHeight/3]]);
+	var lowFrontWalls = STRUCT([lwFront1,lwFront2_1,lwFront2_2,lwFront3_2,lwFront3_1,]);
+
+	// EXTERNAL SIDE WALLS
+	var lwExternalSideWallRight = SIMPLEX_GRID([[wallsThickness],[wallsThickness+0.5],[lWallHeight]]);
+	var lwExternalSideWallRightDoor = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5,windowWidth],[-lowDoorHeight,(lWallHeight -lowDoorHeight )]]);
+	var lwExternalSideWallCenter = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5-windowWidth,3],[lWallHeight]]);
+	var lwExternalSideWallLeftWindow = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5-windowWidth-3,windowWidth],[littleWindowHeight,-littleWindowHeight,littleWindowHeight]]);
+	var lwExternalSideWallLeft = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5-windowWidth-3-windowWidth,0.5+wallsThickness],[lWallHeight]]);
+	
+	var lwExternalSideWall = STRUCT([lwExternalSideWallRight,lwExternalSideWallRightDoor,lwExternalSideWallCenter,lwExternalSideWallLeftWindow,lwExternalSideWallLeft]);
+	lwExternalSideWall.translate([0],[-wallsThickness]);
+
+	// REAR EXTERNAL SIDE WALLS
+	var pezzoMancante = SIMPLEX_GRID([[-0.5-2*windowWidth-4.5,3],[wallsThickness],[lWallHeight]]);
+	var lwRearExternalWalls = STRUCT([lwFront1,lwFront2_1,lwFront2_2,pezzoMancante]).scale([0],[-1]).translate([0,1],[0.5+2*windowWidth+4.5+3,7+wallsThickness]);
+
+	// SIDE WALLS
+	var lwSideWall = SIMPLEX_GRID([[-11,wallsThickness],[-2*wallsThickness-7,7+wallsThickness+9],[lWallHeight]]);
+
+	// REAR WALLS
+	var lwBackWallRight = SIMPLEX_GRID([[-11,wallsThickness+2.25,-windowWidth,2.25],[-3*wallsThickness-7-7-9,wallsThickness],[lWallHeight]]);
+	var lwBackWindow = SIMPLEX_GRID([[-11-wallsThickness-2.25,windowWidth],
+									 [-3*wallsThickness-7-7-9,wallsThickness],
+									 [littleWindowHeight,-littleWindowHeight,littleWindowHeight]]);
+	
+	var lwBackWalls = STRUCT([lwBackWallRight,lwBackWindow]);
+
+	var lowWalls = STRUCT([lowFrontWalls,lwExternalSideWall,lwRearExternalWalls,lwSideWall,lwBackWalls]);
+	lowWalls = COLOR(BURLY_WOODS)(lowWalls);
+
+	return lowWalls;
+}
+
+var buildMiddleWalls = function() {
+	var littleFrontWindowWidth = 1;
+	var littleFrontWindowHeight = mWallHeight*3/24
+	var bigWindowMWallMeasures_Height = [mWallHeight*2/24,-mWallHeight*12/24,mWallHeight*10/24,];
+
+	// FRONT WALLS
+	var mwFrontExternal = SIMPLEX_GRID([[0.5,-windowWidth,4.5,-windowWidth,1,-littleFrontWindowWidth,1],[wallsThickness],[mWallHeight]]);
+	var mwFrontExternalLeftWindow = SIMPLEX_GRID([[-0.5,windowWidth],[wallsThickness],bigWindowMWallMeasures_Height]);
+	var mwFrontExternalCentralWindow = SIMPLEX_GRID([[-0.5-windowWidth-4.5,windowWidth],[wallsThickness],bigWindowMWallMeasures_Height]);
+	var mwFrontExternalRightLittleWindows = SIMPLEX_GRID([[-0.5-windowWidth-4.5-windowWidth-1,littleFrontWindowWidth],
+														  [wallsThickness],
+														  [mWallHeight*8/24,-littleFrontWindowHeight,mWallHeight*8/24,-littleFrontWindowHeight,mWallHeight*2/24]]);
+	var mwFrontExternal = STRUCT([mwFrontExternal,mwFrontExternalLeftWindow,mwFrontExternalCentralWindow,mwFrontExternalRightLittleWindows]);
+
+
+	var mwFrontCentralVertical = SIMPLEX_GRID([[-11,wallsThickness+1.5,-windowWidth,3],[wallsThickness],[mWallHeight]]);
+	var mwFrontCentralWindow = SIMPLEX_GRID([[-11-wallsThickness-1.5,windowWidth],[wallsThickness],bigWindowMWallMeasures_Height]);
+	var mwFrontCentral = STRUCT([mwFrontCentralVertical,mwFrontCentralWindow]);
+
+	var mwFrontColonnade = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness +0.8,-windowWidth,(stairsTotalWidth/2-doorWidth/2 -windowWidth -wallsThickness -0.8)],
+										 [wallsThickness],[mWallHeight]]);;
+	var mwFrontColonnadeWindow = SIMPLEX_GRID([[-11-wallsThickness-6-wallsThickness-0.8,windowWidth],[wallsThickness],bigWindowMWallMeasures_Height]);
+	var mwFrontColonnade = STRUCT([mwFrontColonnade,mwFrontColonnadeWindow]);
+
+	var frontWalls = STRUCT([mwFrontExternal,mwFrontCentral,mwFrontColonnade]);
+
+	// EXTERNAL SIDE WALLS
+	var mwExternalSideWallVertical = SIMPLEX_GRID([[wallsThickness],[wallsThickness+0.5,-windowWidth,3,-windowWidth,0.5+wallsThickness],[mWallHeight]]);
+	var mwExternalSideWallRightWindow = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5,windowWidth],bigWindowMWallMeasures_Height]);
+	var mwExternalSideWallLeftWindow = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5-windowWidth-3,windowWidth],bigWindowMWallMeasures_Height]);
+
+	var mwExternalSideWall = STRUCT([mwExternalSideWallVertical,mwExternalSideWallRightWindow,mwExternalSideWallLeftWindow]);
+	mwExternalSideWall.translate([0],[-wallsThickness]);
+
+
+	// REAR EXTERNAL SIDE WALLS
+	var mwSideRearVertical = SIMPLEX_GRID([[9,-windowWidth,0.5],[-wallsThickness-7,wallsThickness],[mWallHeight]]);
+	var mwSideRearWindow = SIMPLEX_GRID([[-9,windowWidth],[-wallsThickness-7,wallsThickness],[mWallHeight*19/24,-mWallHeight*3/24,mWallHeight*2/24]]);
+	var mwSideRear = STRUCT([mwSideRearVertical,mwSideRearWindow]);
+	
+	// SIDE WALLS
+	var mwSideVerticalRight = SIMPLEX_GRID([[-11,wallsThickness],[-2*wallsThickness-7,(7 -windowWidth)/2,-windowWidth,(7 -windowWidth)/2+wallsThickness],[mWallHeight]]);
+	var mwSideWindowRight = SIMPLEX_GRID([[-11,wallsThickness],[-2*wallsThickness-7,-(7 -windowWidth)/2,windowWidth],bigWindowMWallMeasures_Height]);
+	var mwSideVerticalLeft = SIMPLEX_GRID([[-11,wallsThickness],[-3*wallsThickness-7-7,0.5,-windowWidth,1.5,-windowWidth,1.5,-windowWidth,1+wallsThickness],[mWallHeight]]);
+	var mwSideWindowCenterRight = SIMPLEX_GRID([[-11,wallsThickness],[-3*wallsThickness-7-7-0.5,windowWidth],bigWindowMWallMeasures_Height]);
+	var mwSideWindowCenterLeft = T([1])([1.5+windowWidth])(mwSideWindowCenterRight);
+	var mwSideWindowLeft = T([1])([1.5+windowWidth])(mwSideWindowCenterLeft);
+	var mwSide = STRUCT([mwSideVerticalRight,mwSideWindowRight,mwSideVerticalLeft,mwSideWindowCenterRight,mwSideWindowCenterLeft,mwSideWindowLeft])
+	
+	// BACK WALLS
+	var mwBackVertical = SIMPLEX_GRID([[-11-wallsThickness,+2.25,-windowWidth,2.25],[-3*wallsThickness-7-7-9,wallsThickness],[mWallHeight]]);
+	var mwBackWindow = SIMPLEX_GRID([[-11-wallsThickness-2.25,windowWidth],
+									 [-3*wallsThickness-7-7-9,wallsThickness],
+									 [mWallHeight/4,-mWallHeight/4,mWallHeight/4+mWallHeight/16,-mWallHeight/8,mWallHeight/16]]);
+	var mwBackColonnadeVertical = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness+columnDistance,-windowWidth,columnDistance,-windowWidth,columnDistance],
+									   [-3*wallsThickness-7-7-4,wallsThickness],[mWallHeight]]);
+	var mwBackColonnadeWindowRight = SIMPLEX_GRID([[-11-wallsThickness-6-wallsThickness-columnDistance,windowWidth],
+									   [-3*wallsThickness-7-7-4,wallsThickness],bigWindowMWallMeasures_Height]);
+	var mwBackColonnadeWindowLeft = T([0])([windowWidth+columnDistance])(mwBackColonnadeWindowRight);
+	var mwBackColonnadeDoor = SIMPLEX_GRID([[-11-wallsThickness-6 -(stairsTotalWidth/2 -doorWidth/2),doorWidth/2],
+									   [-3*wallsThickness-7-7-4,wallsThickness],[-doorHeight,(mWallHeight-doorHeight)]]);
+	var mwBackColonnadeInternalVertical = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness],
+									   [-3*wallsThickness-7-7-4,wallsThickness+1,-2,1+wallsThickness],[mWallHeight]]);
+	var mwBackColonnadeInternalDoor = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness],
+									   [-3*wallsThickness-7-7-4-wallsThickness-1,2],[-mWallHeight*12/24,mWallHeight*12/24]]);
+	var mwBackColonnade = STRUCT([mwBackColonnadeVertical,mwBackColonnadeWindowRight,mwBackColonnadeWindowLeft,
+								mwBackColonnadeDoor,mwBackColonnadeInternalVertical,mwBackColonnadeInternalDoor]);
+
+
+	var mwbackWalls = STRUCT([mwBackVertical,mwBackWindow,mwBackColonnade]);
+
+	var middleWalls = STRUCT([frontWalls,mwExternalSideWall,mwSideRear,mwbackWalls,mwSide]);
+	middleWalls.translate([2],[lWallHeight]);
+
+	return middleWalls;
+}
+
+var corniceHeight = 1.5;
+
+var buildHighWalls = function() {
+	var bigWindowMWallMeasures_Height = [mWallHeight*2/24,-mWallHeight*12/24,mWallHeight*10/24];
+
+
+	var hwAltitude = lWallHeight +mWallHeight +corniceHeight;
+	var bigWindowHWallMeasures_Height = [-mWallHeight*12/24,mWallHeight*12/24];
+	var leftExternaWindowWallMeasures_Height = [-mWallHeight*8/24,mWallHeight*1/24];
+	
+	// FRONT WALLS
+	var hwFrontExternal = SIMPLEX_GRID([[0.5,-windowWidth,4.5,-windowWidth,1,-littleFrontWindowWidth,1],[wallsThickness],[mWallHeight*9/24]]);
+	var hwFrontExternalLeftWindow = SIMPLEX_GRID([[-0.5,windowWidth],[wallsThickness],leftExternaWindowWallMeasures_Height]);
+	var hwFrontExternalCentralWindow = SIMPLEX_GRID([[-0.5-windowWidth-4.5,windowWidth],[wallsThickness],leftExternaWindowWallMeasures_Height]);
+	var hwFrontExternalRightLittleWindows = SIMPLEX_GRID([[-0.5-windowWidth-4.5-windowWidth-1,littleFrontWindowWidth],
+														  [wallsThickness],
+														  [-mWallHeight*3/24,mWallHeight*6/24]]);
+	var hwFrontExternal = STRUCT([hwFrontExternal,hwFrontExternalLeftWindow,hwFrontExternalCentralWindow,hwFrontExternalRightLittleWindows]);
+
+	var hwFrontCentral = SIMPLEX_GRID([[-11,wallsThickness+1.5,-windowWidth,3],[wallsThickness],[mWallHeight]]);
+	var hwFrontCentralWindow = SIMPLEX_GRID([[-11-wallsThickness-1.5,windowWidth],[wallsThickness],bigWindowHWallMeasures_Height]);
+	var hwFrontCentral = STRUCT([hwFrontCentral,hwFrontCentralWindow]);
+
+	var hwFrontColonnade = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness +0.8,-windowWidth,(stairsTotalWidth/2-doorWidth/2 -windowWidth -wallsThickness -0.8)],
+										 [wallsThickness],[mWallHeight]]);;
+	var hwFrontColonnadeWindow = SIMPLEX_GRID([[-11-wallsThickness-6-wallsThickness-0.8,windowWidth],[wallsThickness],bigWindowHWallMeasures_Height]);;
+	var frontColonnade = STRUCT([hwFrontColonnade,hwFrontColonnadeWindow]);
+
+	var hwFrontWalls = STRUCT([frontColonnade,hwFrontCentral,hwFrontExternal]);
+
+	// EXTERNAL SIDE WALLS
+	var hwExternalSideWallVertical = SIMPLEX_GRID([[wallsThickness],[wallsThickness+0.5,-windowWidth,3+windowWidth+0.5+wallsThickness],[mWallHeight*9/24]]);
+	var hwExternalSideWallWindow = SIMPLEX_GRID([[wallsThickness],[-wallsThickness-0.5,windowWidth],leftExternaWindowWallMeasures_Height]);
+	var externalWalls = STRUCT([hwExternalSideWallVertical,hwExternalSideWallWindow]).translate([0],[-1]);
+
+	// REAR EXTERNAL SIDE WALLS
+	var hwRearVertical = SIMPLEX_GRID([[9,-windowWidth,0.5],[-wallsThickness-7,wallsThickness],[mWallHeight*9/24]]);
+	var hwRearWindow = SIMPLEX_GRID([[-9,windowWidth],[-wallsThickness-7,wallsThickness],[mWallHeight/24,-mWallHeight*3/24,mWallHeight*5/24]]);
+	var hwRear = STRUCT([hwRearVertical,hwRearWindow]);
+
+	// BACK WALLS
+	var hwBackColonnadeVertical = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness+columnDistance,-windowWidth,columnDistance,-windowWidth,columnDistance],
+									   [-3*wallsThickness-7-7-4,wallsThickness],[mWallHeight]]);
+	var hwBackColonnadeWindowRight = SIMPLEX_GRID([[-11-wallsThickness-6-wallsThickness-columnDistance,windowWidth],
+									   [-3*wallsThickness-7-7-4,wallsThickness],bigWindowMWallMeasures_Height]);
+	var hwBackColonnadeWindowLeft = T([0])([windowWidth+columnDistance])(hwBackColonnadeWindowRight);
+	var hwBackColonnadeDoor = SIMPLEX_GRID([[-11-wallsThickness-6 -(stairsTotalWidth/2 -doorWidth/2),doorWidth/2],
+									   [-3*wallsThickness-7-7-4,wallsThickness],[-doorHeight,(mWallHeight-doorHeight)]]);
+	var hwBackColonnadeInternalVertical = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness],
+									   [-3*wallsThickness-7-7-4,wallsThickness+1,-2,1+wallsThickness],[mWallHeight]]);
+	var hwBackColonnadeInternalDoor = SIMPLEX_GRID([[-11-wallsThickness-6,wallsThickness],
+									   [-3*wallsThickness-7-7-4-wallsThickness-1,2],[-mWallHeight*12/24,mWallHeight*12/24]]);
+
+
+	var hwBackWindow = SIMPLEX_GRID([[-11-wallsThickness-2.25,windowWidth],[-3*wallsThickness-7-7-9,wallsThickness],[mWallHeight*4/24,-mWallHeight*8/24,mWallHeight*12/24]]);
+	var hwbackCentralVertical = SIMPLEX_GRID([[-11-wallsThickness,+2.25,-windowWidth,2.25],[-3*wallsThickness-7-7-9,wallsThickness],[mWallHeight]]);
+	var hwBack = STRUCT([hwbackCentralVertical,hwBackWindow,hwBackColonnadeVertical,hwBackColonnadeWindowRight,hwBackColonnadeWindowLeft,
+						hwBackColonnadeDoor,hwBackColonnadeInternalVertical,hwBackColonnadeInternalDoor]);
+
+	// SIDE WALLS
+	var hwSideVerticalRight = SIMPLEX_GRID([[-11,wallsThickness],[-2*wallsThickness-7,(7 -windowWidth)/2,-windowWidth,(7 -windowWidth)/2+wallsThickness],[mWallHeight]]);
+	var hwSideWindowRight = SIMPLEX_GRID([[-11,wallsThickness],[-2*wallsThickness-7,-(7 -windowWidth)/2,windowWidth],bigWindowHWallMeasures_Height]);
+	var hwSideVerticalLeft = SIMPLEX_GRID([[-11,wallsThickness],[-3*wallsThickness-7-7,0.5,-windowWidth,1.5,-windowWidth,1.5,-windowWidth,1+wallsThickness],[mWallHeight]]);
+	var hwSideWindowCenterRight = SIMPLEX_GRID([[-11,wallsThickness],[-3*wallsThickness-7-7-0.5,windowWidth],bigWindowHWallMeasures_Height]);
+	var hwSideWindowCenterLeft = T([1])([1.5+windowWidth])(hwSideWindowCenterRight);
+	var hwSideWindowLeft = SIMPLEX_GRID([[-11,wallsThickness],
+										 [-3*wallsThickness-7-7-0.5-windowWidth-1.5-windowWidth-1.5,windowWidth],
+										 [mWallHeight*14/24,-mWallHeight*3/24,mWallHeight*7/24]]);
+	var hwSide = STRUCT([hwSideVerticalRight,hwSideWindowRight,hwSideVerticalLeft,hwSideWindowCenterRight,hwSideWindowCenterLeft,hwSideWindowLeft])
+
+
+
+	var highWalls = STRUCT([hwFrontWalls,externalWalls,hwRear,hwBack,hwSide]);
+	highWalls.translate([2],[hwAltitude]);
+
+	return highWalls;
+}
+
+
+
+var buildFrontWalls = function() {
+	// FRONT WALLS
+	/*var lwFront1 = SIMPLEX_GRID([[0.5,-windowWidth,4.5,-windowWidth,1],[wallsThickness],[lWallHeight]]);
 	var lwFront2_1 = SIMPLEX_GRID([[-0.5,windowWidth],
 								 [wallsThickness],
 								 [lWallHeight/3,-lWallHeight/3,lWallHeight/3]]);
@@ -600,7 +821,7 @@ var buildFrontWalls = function() {
 	
 	var lowWalls = STRUCT([lwFront1,lwFront2_1,lwFront2_2,lwFront3_2,lwFront3_1]);
 	lowWalls = COLOR(BURLY_WOODS)(lowWalls);
-
+*/
 	var mwFront1 = SIMPLEX_GRID([[0.5,-windowWidth,4.5,-windowWidth,1],[wallsThickness],[-lWallHeight,mWallHeight]]);
 	var mwFront2_1 = SIMPLEX_GRID([[-0.5,windowWidth],
 								 [wallsThickness],
@@ -631,7 +852,7 @@ var buildFrontWalls = function() {
 	var highWall2 = T([2])([mWallHeight])(STRUCT([mwFront3,mwFront2_4,mwFront4]));
 	var highWalls = STRUCT([highWall1,highWall2]);
 
-	var frontWalls = STRUCT([mwFront1,mwFront2_1,mwFront2_3,mwFront2_4,mwFront3,mwFront4,mwFront5,frontCentral,lowWalls,highWalls]);
+	var frontWalls = STRUCT([mwFront1,mwFront2_1,mwFront2_3,mwFront2_4,mwFront3,mwFront4,mwFront5,frontCentral,/*lowWalls,*/highWalls]);
 
 	return frontWalls;
 }
@@ -714,7 +935,7 @@ var buildRoofs = function() {
 	var cRoof = buildCentralRoof();
 	var hRoof = buildHorizontalRoof();
 
-	var leftRoof = STRUCT([cRoof,hRoof]).translate([0,2],[6+11+wallsThickness,totalWallHeight]);
+	var leftRoof = STRUCT([cRoof,hRoof]).translate([0,2],[6+11+wallsThickness,totalWallHeight+corniceHeight]);
 	var roof = duplicate(leftRoof);
 	DRAW(roof);
 }
