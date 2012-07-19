@@ -3,10 +3,10 @@
 var domain1 = DOMAIN([[0,1],[0,1]])([20,20]);
 var roofDomain = DOMAIN([[0,1],[0,1]])([6,6]);
 //var columnDomain = DOMAIN([[0,1],[0,2*PI]])([40,30]);
-var columnDomain = DOMAIN([[0,1],[0,2*PI]])([20,15]);
+var columnDomain = DOMAIN([[0,1],[0,2*PI]])([1,15]);
 var domain2d = DOMAIN([[0,1],[0,1]])([50,1]);
 //var spiralDomain = DOMAIN([[0,1],[0,1]])([50,50]);
-var spiralDomain = DOMAIN([[0,1],[0,1]])([20,20]);
+var spiralDomain = DOMAIN([[0,1],[0,1]])([20,1]);
 var p = 10; // proportion
 
 var domain = INTERVALS(1)(32);
@@ -1213,7 +1213,7 @@ var buildColumn = function() {
 	var body = buildColumnBody();
 	var base = buildColumnBase();
 
-	var column = STRUCT([/*capital,*/body,base]);
+	var column = STRUCT([capital,body,base]);
 	column.translate([0,1,2],[11+6+2*wallsThickness-rColumn,-colonnadeDepth,lWallHeight]);
 
 	return column;
