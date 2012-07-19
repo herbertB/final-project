@@ -1539,3 +1539,142 @@ buildVilla();
 //DRAW(buildDoors())
 //buildFrontCornice()
 //buildFrontCornice()
+
+
+
+var applyBoundaries = function(){
+	var h = littleWindowHeight;
+	// LITTLE WINDOWS
+	var lowFrontLeft = applyBoundaryWood([0.5,0,lWallHeight/3],h);
+	var lowFrontRight = applyBoundaryWood([13.5,0,lWallHeight/3],h);
+	var lowSideExternalLeft = applyBoundaryWood([0,wallsThickness+ 7 -0.5 ,littleWindowHeight],h,true).translate([0],[-1]);
+	var lowSideExternalRear = applyBoundaryWood([11 -windowWidth -0.5 ,2*wallsThickness +7 -windowThickness,littleWindowHeight],h);
+	var lowBackLow = T([0,1])([0.75,7+7+9+ 4*wallsThickness+windowThickness])(lowFrontRight);
+
+	// CURVE WINDOWS
+	h = bigWindowHeight*3/4;
+	var mFrontColonnade = applyBoundaryWood([19.8,0,lWallHeight+mWallHeight*2/24],h);
+	var mFrontRight = T([0])([-windowWidth*3/2 -4 - blindThickness])(mFrontColonnade);
+	var mFrontLeft = applyBoundaryWood([0.5,0,lWallHeight+mWallHeight*2/24],h);
+	var mFrontCenter = T([0])([windowWidth+4.5])(mFrontLeft);
+
+	var wSideLowRight = applyBoundaryWood([11,2*wallsThickness+7+(7 -windowWidth)/2 +windowWidth,lWallHeight+mWallHeight*2/24],h ,true);
+	var wSideLowCenterRight = T([1])([windowWidth +(7 -windowWidth)/2+windowWidth])(wSideLowRight);
+	var wSideLowCenterLeft = T([1])([windowWidth+1.5])(wSideLowCenterRight);
+	var wSideLowLeft = T([1])([windowWidth+1.5])(wSideLowCenterLeft);
+
+	// BIG WINDOWS
+	h = bigWindowHeight;
+	var hFrontColonnade = applyBoundaryWood([19.8,0,hwAltitude],h);
+	var hFrontRight = T([0])([-windowWidth*3/2 -4 - blindThickness])(hFrontColonnade);
+	var hBackColonnadeLeft = applyBoundaryWood([20.5+windowWidth,22+windowThickness,hwAltitude+mWallHeight*2/24],h);
+	var hBackColonnadeRight = T([0])([-windowWidth-1+0.25])(hBackColonnadeLeft);
+
+	var wSideMediumRight = applyBoundaryWood([11,2*wallsThickness+7+(7 -windowWidth)/2 +windowWidth,lWallHeight+mWallHeight+corniceHeight],h ,true);
+	var wSideMediumCenterRight = T([1])([windowWidth +(7 -windowWidth)/2+windowWidth])(wSideMediumRight);
+	var wSideMediumCenterLeft =  T([1])([windowWidth+1.5])(wSideMediumCenterRight);
+	
+
+	
+
+	// H FRONT
+	var h = mWallHeight*8/24;
+	var hFrontLeft = applyBoundaryWood([0.5,0,hwAltitude],h);
+	var hFrontCenter =  T([0])([windowWidth+4.5])(hFrontLeft);
+
+	// BACk
+	var mBackColonnadeLeft = applyBoundaryWood([20.5+windowWidth,22+windowThickness,lWallHeight+mWallHeight*2/24],h);
+	var mBackColonnadeRight = T([0])([-windowWidth-1+0.25])(mBackColonnadeLeft);
+
+	// MIDDLE WINDOWS
+	h =  mWallHeight/8;
+	var wMBackLow = applyBoundaryWood([11+wallsThickness+2.25,
+										7+7+9+ 4*wallsThickness +blindThickness,
+										lWallHeight+ mWallHeight/4],  mWallHeight/4 );
+	var wMbackMiddle = applyBoundaryWood([11+wallsThickness+2.25,
+										7+7+9+ 4*wallsThickness+blindThickness,
+										lWallHeight+ mWallHeight*3/4+mWallHeight/16],   h );
+	var wHBackHigh = applyBoundaryWood([11+wallsThickness+2.25,
+										7+7+9+ 4*wallsThickness +blindThickness,
+									lWallHeight+mWallHeight+corniceHeight+mWallHeight*4/24],    mWallHeight*8/24 );
+
+
+	// EXTERNAL SIDE
+	var wExternalSideLeft = T([0,1])([-11-wallsThickness,-(7 -windowWidth)/2 -wallsThickness-0.5 -windowWidth])(wSideLowRight);
+	var wExternalSideRight = T([1])([-windowWidth-3])(wExternalSideLeft);
+
+	h = mWallHeight*3/24;
+	var wMRear = applyBoundaryWood([0.5+2*windowWidth+4.5+1,2*wallsThickness+7+blindThickness,hwAltitude -corniceHeight -mWallHeight*2/24 -h],h);
+	var wHRear = applyBoundaryWood([0.5+2*windowWidth+4.5+1,2*wallsThickness+7+blindThickness,hwAltitude +mWallHeight/24],h);
+	var wHSide = applyBoundaryWood([11,3*wallsThickness+7+7+9-1,hwAltitude+hWallHeight-mWallHeight*7/24-h],h,true); 
+
+
+	var wHExternal = T([0])([-0.5])(hFrontLeft).rotate([0,1],[PI/2]).translate([0,1],[-wallsThickness -blindThickness , wallsThickness+0.5]);
+
+	h = littleFrontWindowHeight;
+	var wLowFront = apply1x1BoundaryWood([0.5+3+4.5+1,0,lWallHeight+mWallHeight*8/24],h);
+	var wMiddleFront = T([2])([h+mWallHeight*8/24])(wLowFront);
+	var wHighFront = T([2])([h+mWallHeight*2/24+corniceHeight])(wMiddleFront);
+	
+
+	boundaries = STRUCT([lowFrontLeft,lowFrontRight,lowSideExternalLeft,lowSideExternalRear,lowBackLow,
+						hFrontColonnade,hFrontRight, hBackColonnadeLeft, hBackColonnadeRight,
+						mFrontColonnade,mFrontRight,mFrontLeft,mFrontCenter,
+						hFrontLeft,hFrontCenter,
+						mBackColonnadeLeft,mBackColonnadeRight,
+						wMbackMiddle,wHBackHigh,wMBackLow,
+						wSideLowRight,wSideLowCenterRight,wSideLowCenterLeft,wSideMediumRight,wSideMediumCenterRight,wSideMediumCenterLeft,wSideLowLeft,
+						wExternalSideLeft,wExternalSideRight,
+						wMRear,wHRear,wHSide,
+						wHExternal,
+						wLowFront,wMiddleFront,wHighFront]);
+	boundaries = duplicate(boundaries);
+	DRAW(boundaries);
+}
+
+/* 
+lbV: left bottom vertex
+side: true if window width on x axis
+*/
+
+var applyBoundaryWood = function(lbV,windowHeight,side) {
+	if (!side) {
+		var bottomWood = SIMPLEX_GRID([[windowWidth],[blindThickness],[blindHeight]]);	
+		var sideWoodLeft = SIMPLEX_GRID([[blindThickness],[blindThickness],[-blindHeight,windowHeight-2*blindThickness]]);	
+		var sideWoodRight = T([0])([windowWidth-blindThickness])(sideWoodLeft);
+		var topWood = T([2])([windowHeight -blindThickness])(bottomWood);
+		var centralWood = SIMPLEX_GRID([[-(windowWidth/2-blindThickness),2*blindThickness],[blindThickness],[-blindThickness,windowHeight -blindThickness ]]);
+	}
+	else {
+		var bottomWood = SIMPLEX_GRID([[blindThickness],[windowWidth],[blindHeight]]);	
+		var sideWoodLeft = SIMPLEX_GRID([[blindThickness],[blindThickness],[-blindHeight,windowHeight-2*blindThickness]]);	
+		var sideWoodRight = T([1])([windowWidth-blindThickness])(sideWoodLeft);
+		var topWood = T([2])([windowHeight -blindThickness])(bottomWood);
+		var centralWood = SIMPLEX_GRID([[blindThickness],[-(windowWidth/2-blindThickness),2*blindThickness],[-blindThickness,windowHeight -blindThickness ]]);
+		var blind = STRUCT([bottomWood,sideWoodLeft,sideWoodRight,topWood,centralWood]).translate([0,1,2],[lbV[0],lbV[1]-blindThickness,lbV[2]]);
+		blind.translate([0,1],[-windowThickness/2,-windowWidth+blindThickness])
+		blind = COLOR(DARK_WOOD)(blind);
+		return blind;
+
+	}
+	
+	var blind = STRUCT([bottomWood,sideWoodLeft,sideWoodRight,topWood,centralWood]).translate([0,1,2],[lbV[0],lbV[1]-blindThickness,lbV[2]]);
+	blind = COLOR(DARK_WOOD)(blind);
+
+	return blind;
+}
+var apply1x1BoundaryWood = function(lbV,windowHeight,side) {
+	var windowWidth = 1;
+	if (!side) {
+		var bottomWood = SIMPLEX_GRID([[windowWidth],[blindThickness],[blindHeight]]);	
+		var sideWoodLeft = SIMPLEX_GRID([[blindThickness],[blindThickness],[-blindHeight,windowHeight-2*blindThickness]]);	
+		var sideWoodRight = T([0])([windowWidth-blindThickness])(sideWoodLeft);
+		var topWood = T([2])([windowHeight -blindThickness])(bottomWood);
+		var centralWood = SIMPLEX_GRID([[-(windowWidth/2-blindThickness),2*blindThickness],[blindThickness],[-blindThickness,windowHeight -blindThickness ]]);
+	}
+	
+	var blind = STRUCT([bottomWood,sideWoodLeft,sideWoodRight,topWood,centralWood]).translate([0,1,2],[lbV[0],lbV[1]-blindThickness,lbV[2]]);
+	blind = COLOR(DARK_WOOD)(blind);
+
+	return blind;
+}
