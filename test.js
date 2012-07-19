@@ -1213,7 +1213,7 @@ var buildColumn = function() {
 	var body = buildColumnBody();
 	var base = buildColumnBase();
 
-	var column = STRUCT([capital,body,base]);
+	var column = STRUCT([/*capital,*/body,base]);
 	column.translate([0,1,2],[11+6+2*wallsThickness-rColumn,-colonnadeDepth,lWallHeight]);
 
 	return column;
@@ -1296,7 +1296,7 @@ var buildCapital = function() {
 	centerCapital.translate([0,1,2],[0.090*p,0.025*p,(heightReference-0.018)*p]);
 
 
-	var capital = STRUCT([ spiral, spiralCenter.translate([0,1],[-0.009,0.015]), lengthCapital, ]);
+	var capital = STRUCT([ spiral, spiralCenter.translate([0,1],[-0.009,0.015]), lengthCapital ]);
 
 	capital.rotate([0,2],[PI/2]);
 	capital.rotate([1,2],[-PI/12]);
